@@ -1,3 +1,6 @@
+
+using namespace std;
+
 #include <iostream>
 #include <fstream>
 
@@ -10,19 +13,20 @@ int main() {
 	DIR *dr;
 	struct dirent* dent;
 	dr = opendir("/");
-	char *buffer[1024];
-
-	//std::fstream myfile;
-	//myfile.open("example.txt");
+	char buffer[1024];
 
 	if (dr) {
 		while ((dent = readdir(dr)) != NULL) {
-			//myfile << dent->d_name << "\n";
+			strcpy(buffer, dent->d_name);
+			printf("%s\n", dent->d_name);
 		}
 		closedir(dr);
 	}
-	
-	//myfile.close();
+
+	printf("%s\n", buffer);
 
 	return 0;
 }
+
+
+
