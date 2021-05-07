@@ -1,47 +1,36 @@
 #!/usr/bin/python3
 
-import http.client
-import urllib.parse
+import requests
 import sys
 
-
 def main():
-	if (len(sys.argv) == 3):
-		print("Usage: ./login-brute-force [user wordlist] [password wordlist]")
-		exit(1)
+	if ( (len(sys.argv) < 4) or ('-h' in sys.argv)):
+		usage()
+		exit(0)
 
-	serv_host = input("host/IP : ")
-	serv_port = input("port : ")
+	if ('-d' in sys.argv):
+		index = sys.argv.index('-d')
+		form_data = sys.argv[index + 1]
+		form_data = form_data.split(',')
 
-	lst = serv_host.split("/")
-
-	if (len(lst) < 3):
-		url = '/'
-	else:
-		url = extension(serv_host)	
-
-	print(url)	
-	serv_ip = serv_host[2]
-
-	# check if server is up
-	connection = http.client.HTTPConnection(host, serv_port)
-	connection.request('GET','/')	
-	pirnt(connection.status)
+		info = {}
+		for key in range(len(form_data)):
+			value = input(form_data[key] + ': ')
+			info[form_data[key]] = value
 
 
-	# Drive loop
-	#for user in open(sys.argv[1], 'r', encoding='utf-8'):
-	#	user = user.strip()
-	#	for password in open(sys.argv[2], 'r' encoding='utf-8'):
-	#		password = password.strip()
+	response = requests.post(sys.argv[1], data=info).text
+	print(response)
 
 
-def extension(serv_host):
-	lst = serv_host.split('/')
-	url = "/" + "/".join(lst[3:])
-	return url
 
-
+def usage():
+	print("Usage: " + sys.argv[0] + "[URL] -u [User Worldist] -p [Password Wordlist]\n" +
+		  "Options:\n" + 
+		  "\t-u\t: Username Wordlist\n" +
+		  "\t-p\t: Password Wordlist\n" + 
+		  "\t-h\t: Display this Help Message\n" +
+		  "\t-d\t: Keys in the Body of the POST statement. Seperate using commas (ex: cookie,query,user,password).\n")
 
 
 if __name__=="__main__":
