@@ -23,6 +23,7 @@ def error(c):
   """
   Errors
   """
+  pw_in = ""
   print("Error: " + c)
   exit(-1)
 
@@ -30,11 +31,12 @@ def action(conn):
   """
   Authentication
   """
-  pw_in = 0
+  pw_in = ""
   passwd = bytes("\nPassword?\n",'utf-8')
   conn.send(passwd)
   pw_in = conn.recv(len(pw_in))
-  print(str(pw_in))
+  print(pw_in.decode('utf-8'))
+  
 
 
 
