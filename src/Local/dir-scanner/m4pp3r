@@ -1,0 +1,82 @@
+#!/usr/bin/python3
+########################################
+## Created by Maximillian A. Campbell ##
+########################################
+
+# ======= Modules =======
+import sys
+import requests
+import time
+
+# ======= Variables =======
+URL = ""
+WORDLIST = ""
+OUTPUT_FILE = ""
+# ======= Functions =======
+def usage():
+    """
+    Usage statement
+    """
+    print("usage: ./dir-scanner [URL] [OPTIONS]...[ -h | -w ]\n" + 
+          "options:\n" + 
+          "\t-h : Display this help message\n" +
+          "\t-w : Wordlist\n" +
+          "\t-o : Output to a File\n")
+    sys.exit(0)
+
+def header():
+    start = time.asctime(time.localtime(time.time())) 
+    print("[+] URL\t: " + URL + "\n" +
+          "[+] Wordlist\t: " + WORDLIST + "\n" +
+          "[+] Output File\t: " + OUTPUT_FILE + "\n" +
+          "===================================\n" +
+          "Started m4pping : " + start + "\n" +
+          "===================================")
+
+def footer():
+    end = time.asctime(time.localtime(time.time()))
+    print("===================================\n" +
+          "Finished m4pping : " + end + "\n" +
+          "===================================\n")
+
+def error(c):
+    """
+    Report errors
+    """
+    print("Error: " + c)
+    sys.exit(-1)
+
+def forward_slash(url):
+    """
+    Appends a forward slash at the end of the 
+    url if there isn't one
+    """
+    url = list(url)
+    if (url[-1] == '/'):
+        return "".join(url)
+    return "".join(url) + "/"
+
+def m4p():
+    """
+    Main driver
+    """
+    for word in open(WORDLIST,'r'):
+        word = word.strip()
+        r = requests.get(URL + word,)
+        status_code = r.status_code
+        
+        
+# ======= Main =======
+argv = sys.argv
+
+if (len(argv) < 3):
+    usage()
+
+URL = forward_slash(argv[1])
+WORDLIST = argv[argv.index('-w') + 1]
+
+header()
+m4p()
+footer()
+
+    
