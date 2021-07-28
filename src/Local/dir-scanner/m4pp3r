@@ -12,6 +12,7 @@ import time
 URL = ""
 WORDLIST = ""
 OUTPUT_FILE = ""
+WHITE_LIST = [200, 204, 301, 302, 307, 401, 403]
 # ======= Functions =======
 def usage():
     """
@@ -26,18 +27,22 @@ def usage():
 
 def header():
     start = time.asctime(time.localtime(time.time())) 
-    print("[+] URL\t: " + URL + "\n" +
-          "[+] Wordlist\t: " + WORDLIST + "\n" +
-          "[+] Output File\t: " + OUTPUT_FILE + "\n" +
-          "===================================\n" +
-          "Started m4pping : " + start + "\n" +
-          "===================================")
+    header = "[+] URL\t\t: " + URL + "\n" + "[+] Wordlist\t: " + WORDLIST + "\n" + "[+] Output File\t: " + OUTPUT_FILE + "\n" + "===================================\n" + "Started m4pping : " + start + "\n" + "==================================="
+    print(header)
+    if (OUTPUT_FILE):
+        outputFile = open(OUTPUT_FILE,'w')
+        outputFile.write(header)
+        outputFile.close()
 
 def footer():
     end = time.asctime(time.localtime(time.time()))
-    print("===================================\n" +
-          "Finished m4pping : " + end + "\n" +
-          "===================================\n")
+    footer = "===================================\n" + "Finished m4pping : " + end + "\n" + "===================================\n"
+    print(footer)
+    if (OUTPUT_FILE):
+        outputFile = open(OUTPUT_FILE,'w')
+        outputFile.write(footer)
+        outputFile.close()
+
 
 def error(c):
     """
@@ -60,10 +65,20 @@ def m4p():
     """
     Main driver
     """
+    if (OUTPUT_FILE):
+        outputFile = open(OUTPUT_FILE,'w')
+
     for word in open(WORDLIST,'r'):
         word = word.strip()
         r = requests.get(URL + word,)
         status_code = r.status_code
+
+        if (status_code in WHITE_LIST):
+            print('/' + word + '\t(Status: ' + str(status_code) + ')')
+            outputFile.write('/' + word + '\t(Status: ' + str(status_code) + ')\n')
+
+    if (OUTPUT_FILE):
+        outputFile.close()
         
         
 # ======= Main =======
@@ -71,6 +86,8 @@ argv = sys.argv
 
 if (len(argv) < 3):
     usage()
+if ('-o' in argv):
+    OUTPUT_FILE = argv[argv.index('-o') + 1]
 
 URL = forward_slash(argv[1])
 WORDLIST = argv[argv.index('-w') + 1]
