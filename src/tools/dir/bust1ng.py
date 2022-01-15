@@ -18,12 +18,15 @@ aa = """
                                                         |  $&#$!J/
                                                          \______/"""
 
+
+
 class Scanner:
-	def __init__(self,host,wordlist,filename,responseCodes):
+	def __init__(self,host,wordlist,filename,responseCodes,extensions):
 		self.host = host
 		self.wordlist = wordlist
 		self.filename = filename
 		self.responseCodes = responseCodes
+		self.extensions = extensions
 
 	def openHandler(self):
 		self.outputFile = open(self.filename,'w')
@@ -36,12 +39,8 @@ class Scanner:
 	def handleResponse(self, payload, pot, response):
 
 		if response.status_code in self.responseCodes:
-
-			hit = f"/{pot} "
-			# Show redirections
-			if payload != response.url:
-				hit += f"--> {response.url}"
-
+			hit = f"/{pot : <20} (code: {response.status_code})"
+			
 			print(hit)
 
 			# If output switch is set, write to a file
@@ -66,15 +65,19 @@ class Scanner:
 			if pot is None: continue
 
 			# Create entire url payload
-			payload = createPayload(self.host, pot.group())
-			
-			# Make request
-			response = requests.get(payload)
-			self.handleResponse(payload, pot.group(), response)
+			for ext in self.extensions:
+				payload = createPayload(self.host, pot.group(), ext)
+				
+				# Make request
+				response = requests.get(payload,allow_redirects=False)
+				self.handleResponse(payload, pot.group() + ext, response)
 
-			# Display progress
-			progress = number / total_lines * 100
-			print("{:.2f}%".format(progress), end='\r')
+				# Display progress
+				progress = number / total_lines * 100
+				print("{:.2f}%".format(progress), end='\r')
+
+	def metaHeader(self):
+		return f"+ Host: {self.host}\n+ Wordlist: {self.wordlist}\n+ Response Codes: {self.responseCodes}\n+ Extensions: {self.extensions}\n+ Output File: {self.filename}\n+ Version: Bust1ng v1.0"
 
 def parseArgs():
 	"""
@@ -89,7 +92,8 @@ def parseArgs():
 	switches.add_argument('-u','--url',required=True,help="Host to be busted")
 	switches.add_argument('-w','--wordlist',default='wordlists/directory-list-2.3-medium.txt',help="Wordlist to be used. Default is directory-list-2.3-medium.txt")
 	switches.add_argument('-v','--version',action='version',version='%(prog)s 1.0')
-	
+	switches.add_argument('-x','--extensions',default='',help="Acceptable extensions")
+
 	args = switches.parse_args()
 	return args
 
@@ -108,12 +112,22 @@ def handleExceptions(host):
 
 	return host
 
-def createPayload(host, payload):
-	return host + payload
+def createPayload(host, payload, ext):
+	return host + payload + ext
 
 def responseCodes(codes):
 	code_list = [int(x) for x in codes.split(',')]
 	return code_list
+
+def acceptableExt(ext):
+	# List of extensions
+	if (',' in ext):
+		ext = ['.'+x for x in ext.split(',')]
+		ext.append('')
+	# Single extension
+	elif (ext is not None):
+		ext = "." + ext
+	return ext
 
 # Parse arguments
 args = parseArgs()
@@ -123,12 +137,19 @@ host = handleExceptions(args.url)
 wordlist = args.wordlist
 filename = args.output
 responseCodes = responseCodes(args.response)
+extensions = acceptableExt(args.extensions)
 
 # Create scanner object
-buster = Scanner(host, wordlist, filename, responseCodes)
+buster = Scanner(host, wordlist, filename, responseCodes,extensions)
 
 # Print ascii art and metadata of scan
 print(aa)
+meta = f"""
++================================================================+
+{buster.metaHeader()}
++================================================================+
+"""
+print(meta)
 
 # If an output file is specified
 if filename is not None: buster.openHandler()
