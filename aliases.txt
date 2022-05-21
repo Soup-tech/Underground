@@ -1,0 +1,17 @@
+# Storing all my aliases here
+#
+# 
+
+# Obviously, vpn stuff
+alias ovpn="sudo openvpn /Path/to/vpn/key"
+
+# List all open ports in an nmap output
+getports() {
+	cat $1 | grep -v "filtered" | awk -e '/open/ {print $1,$3}'
+}
+
+# For autorecon
+recon() {
+	sudo $(which autorecon) $1
+}
+

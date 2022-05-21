@@ -1,6 +1,0 @@
-google.com
-microsoft.com
-apple.com
-ferrari.com
-ine.com
-127.0.0.1:1337
