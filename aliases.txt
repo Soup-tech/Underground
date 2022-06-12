@@ -15,3 +15,7 @@ recon() {
 	sudo $(which autorecon) $1
 }
 
+# Get the stty rows and columsn for interactive shell
+getstty() {
+	stty -a | head -n1 | cut -d ';' -f 2-3 | cut -b2- | sed 's/; /\n/'
+}
